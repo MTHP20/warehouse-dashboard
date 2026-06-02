@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Product, Order } from '../models/product.model';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, catchError, delay, interval, Observable, of, retry, shareReplay, switchMap, tap, throwError } from 'rxjs';
 
 // MOCK DATA
 const MOCK_PRODUCTS: Product[] = [
@@ -77,16 +77,74 @@ function getStatus(stockLevel: number): Product['status'] {
   providedIn: 'root',
 })
 export class ProductService {
-  private cache = new Map<string, any>();
-  // private stockUpdates$
+  private productCache = new Map<string, Product>();
+  private productsCache$: Observable<Product[]> | null = null;
 
-  getProducts() {}
+  private stockSubject$ = new BehaviorSubject<Product[]>([...MOCK_PRODUCTS]);
+  private stockStream$ = interval(3000).pipe(
+    tap(() => this.simulateStockInventoryChange()),
+    switchMap(() => of(this.stockSubject$.getValue())),
+    shareReplay(1)
+  );
 
-  getProduct(id: string) {}
+  getProducts(): Observable<Product[]> {
+    if (this.productsCache$) {
+      return this.productsCache$;
+    }
 
-  getOrderHistory(id: string) {}
+    this.productsCache$ = of([...MOCK_PRODUCTS]).pipe(
+      delay(600),
+      retry(2),
+      catchError(() => throwError(() => new Error('Failed to load products. Try again.'))),
+      tap(products => products.forEach(p => this.productCache.set(p.id, p))),
+      shareReplay(1)
+    );
 
-  getStockStream() {}
+    return this.productsCache$
+  }
+
+  getProduct(id: string) {
+    const isCached = this.productCache.get(id);
+    if (isCached) {
+      return of(isCached).pipe(delay(200));
+    }
+
+    const product = MOCK_PRODUCTS.find(item => item.id === id);
+    if (!product) {
+      return throwError(() => new Error('Failed to find product.'))
+    }
+
+    return of({ ...product }).pipe(
+      delay(600),
+      retry(2),
+      catchError(() => throwError(() => new Error('Failed to load product. Try again.'))),
+      tap(item => this.productCache.set(item.id, item)),
+    )
+  }
   
+  getStockStream(): Observable<Product[]> {
+    return this.stockStream$;
+  }
+
+  // Simulate Stock Changes within the Mock Data
+  private simulateStockInventoryChange(): void {
+    const current = this.stockSubject$.getValue();
+    const updated = current.map(product => {
+      const shouldUpdate = Math.random() > 0.6;
+      if (!shouldUpdate) return product;
+
+      const change = Math.floor(Math.random() * 10) - 5;
+      const newLevel = Math.max(0, product.stockLevel + change);
+      const newStatus = getStatus(newLevel);
+
+      if (newStatus !== product.status && (newStatus === 'Low Stock' || newStatus === 'Out of Stock')) {
+        console.log(`${product.name} is now ${newStatus}`);
+      }
+
+      return { ...product, stockLevel: newLevel, status: newStatus };
+    });
+
+    this.stockSubject$.next(updated);
+  }
 
 }
