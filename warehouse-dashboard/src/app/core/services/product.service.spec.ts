@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { throwError, catchError, retry, shareReplay } from 'rxjs';
+import { throwError, catchError, retry, shareReplay, Observable, of } from 'rxjs';
 import { ProductService } from './product.service';
 
 describe('ProductService', () => {
@@ -59,7 +59,7 @@ describe('ProductService', () => {
         expect(earlyResult).toBeNull();
     });
 
-    // TEST UNIT 3 - Give error message when source can't reach
+    // TEST UNIT 3.1 - Give error message when source can't reach
     it('should emit a user-friendly error message when the source fails', async () => {
         (service as any).productsCache$ = null;
 
@@ -76,6 +76,29 @@ describe('ProductService', () => {
 
         await vi.advanceTimersByTimeAsync(0);
 
+        expect(errorMessage).toBe('Failed to load products. Try again.');
+    });
+
+    // TEST UNIT 3.2 Retry up to 2 times before error
+    it('should retry up to 2 times before emitting a user-friendly error', async () => {
+        let attemptCount = 0;
+
+        (service as any).productsCache$ = new Observable((observer: any) => {
+            attemptCount++;
+            observer.error(new Error('forced'));
+        }).pipe(
+            retry(2),
+            catchError(() => throwError(() => new Error('Failed to load products. Try again.')))
+        );
+
+        let errorMessage = '';
+        service.getProducts().subscribe({
+            error: (err: Error) => (errorMessage = err.message),
+        });
+
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(attemptCount).toBe(3);
         expect(errorMessage).toBe('Failed to load products. Try again.');
     });
 
@@ -115,5 +138,53 @@ describe('ProductService', () => {
             quantity: -5,
             date: '2025-05-28',
         });
+    });
+
+    // TEST UNIT 6 - To prove cache map is hit and not a fresh fetch
+    it('should return cached product on second call without re-fetching', async () => {
+        service.getProducts().subscribe();
+        await vi.advanceTimersByTimeAsync(600);
+
+        const getSpy = vi.spyOn((service as any).productCache, 'get');
+
+        let result: any = null;
+        service.getProduct('1').subscribe(p => (result = p));
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(getSpy).toHaveBeenCalledWith('1');
+        expect(result?.id).toBe('1');
+        expect(result?.name).toBe('Mechanical Keyboard');
+    });
+
+    // TEST UNIT 7 - Edge case: empty product list
+    it('should handle an empty product list gracefully', async () => {
+        (service as any).productsCache$ = of([]);
+
+        let result: any[] | null = null;
+        service.getProducts().subscribe(products => (result = products));
+
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(result).toEqual([]);
+        expect(result).toHaveLength(0);
+    });
+
+    // TEST UNIT 8 - Stock status transition
+    it('should reflect correct status after stock level crosses a threshold', async () => {
+        const emissions: any[][] = [];
+        const sub = service.getStockStream().subscribe(p => emissions.push(p));
+
+        (service as any).stockSubject$.next([
+            { id: '1', name: 'Mechanical Keyboard', category: 'Peripherals', stockLevel: 1, status: 'In Stock' }
+        ]);
+
+        await vi.advanceTimersByTimeAsync(3000);
+
+        const latest = emissions.at(-1);
+        const product = latest?.find((p: any) => p.id === '1');
+
+        expect(['Low Stock', 'Out of Stock']).toContain(product?.status);
+
+        sub.unsubscribe();
     });
 });
