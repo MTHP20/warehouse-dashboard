@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Product, Order } from '../models/product.model';
 import { BehaviorSubject, catchError, delay, interval, Observable, of, retry, shareReplay, switchMap, tap, throwError } from 'rxjs';
+import { NotificationsService } from './notifications.service';
 
 // MOCK DATA
 const MOCK_PRODUCTS: Product[] = [
@@ -87,6 +88,8 @@ export class ProductService {
     shareReplay(1)
   );
 
+  constructor(private notificationsService: NotificationsService) { }
+
   getProducts(): Observable<Product[]> {
     if (this.productsCache$) {
       return this.productsCache$;
@@ -149,6 +152,7 @@ export class ProductService {
 
       if (newStatus !== product.status && (newStatus === 'Low Stock' || newStatus === 'Out of Stock')) {
         console.log(`${product.name} is now ${newStatus}`);
+        this.notificationsService.notify(`${product.name} is now ${newStatus}`);
       }
 
       return { ...product, stockLevel: newLevel, status: newStatus };
