@@ -1,1 +1,67 @@
-<p>product-detail works!</p>
+<div>
+    <button (click)="goBack()">
+        ← Back
+    </button>
+    @if (loading()) {
+    <div>
+        <p>Loading product details...</p>
+    </div>
+    } @else if (error()) {
+    <div>
+        <p>{{ error() }}</p>
+        <button (click)="retry()">Retry</button>
+    </div>
+    } @else if (product(); as product) {
+    <div>
+        <h1>{{ product.name }}</h1>
+        <div>{{ stockLabel() }}</div>
+    </div>
+    <div>
+        <div>
+            <div>Category</div>
+            <div>{{ product.category }}</div>
+        </div>
+        <div>
+            <div>Stock Level</div>
+            <div [class.critical]="isCriticalStock()">
+                {{ product.stockLevel }} units
+            </div>
+        </div>
+        <div>
+            <div>Status</div>
+            <div>{{ product.status }}</div>
+        </div>
+    </div>
+    @if (isCriticalStock()) {
+    <div>
+        ⚠ Stock is critically low.
+    </div>
+    }
+    <h2>Order History</h2>
+    @if (orders().length === 0) {
+    <div>
+        <p>No order history available for this product.</p>
+    </div>
+    } @else {
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (order of orders(); track order.id) {
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.date }}</td>
+                <td>{{ order.quantity }}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    }
+    }
+
+</div>

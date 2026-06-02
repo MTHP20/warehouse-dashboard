@@ -140,10 +140,11 @@ export class ProductService {
     const current = this.stockSubject$.getValue();
     const updated = current.map(product => {
       const shouldUpdate = Math.random() > 0.6;
-      if (!shouldUpdate) return product;
 
-      const change = Math.floor(Math.random() * 10) - 5;
-      const newLevel = Math.max(0, product.stockLevel + change);
+      const newLevel = shouldUpdate
+        ? Math.max(0, product.stockLevel + Math.floor(Math.random() * 10) - 5)
+        : product.stockLevel;
+
       const newStatus = getStatus(newLevel);
 
       if (newStatus !== product.status && (newStatus === 'Low Stock' || newStatus === 'Out of Stock')) {

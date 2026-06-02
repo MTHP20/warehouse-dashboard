@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
 import { ProductListComponent } from './product-list.component';
 import { ProductService } from '../../../../core/services/product.service';
@@ -38,6 +38,7 @@ describe('ProductListComponent', () => {
             providers: [
                 { provide: ProductService, useValue: mockProductService },
                 { provide: Router, useValue: mockRouter },
+                { provide: ActivatedRoute, useValue: {} },
             ],
         });
 
@@ -50,7 +51,7 @@ describe('ProductListComponent', () => {
         vi.useRealTimers();
     });
 
-    // TEST UNIT 1 - Render all products on an inital load
+    // TEST CASE 1 - Render all products on an inital load
     it('should render all products on initial load', async () => {
         const results: Product[][] = [];
 
@@ -62,7 +63,7 @@ describe('ProductListComponent', () => {
         expect(results[0][0].name).toBe('USB Hub 7-Port');
     });
 
-    // TEST UNIT 2 - Filter products by category
+    // TEST CASE 2 - Filter products by category
     it('should filter products by category without a button press', async () => {
         const results: Product[][] = [];
 
@@ -76,7 +77,7 @@ describe('ProductListComponent', () => {
         expect(last).toHaveLength(2);
     });
 
-    // TEST UNIT 3 - Filter products by status
+    // TEST CASE 3 - Filter products by status
     it('should filter products by status without a button press', async () => {
         const results: Product[][] = [];
 
@@ -90,7 +91,7 @@ describe('ProductListComponent', () => {
         expect(last).toHaveLength(1);
     });
 
-    // TEST UNIT 4 - Sort the stock ascending and vice versa
+    // TEST CASE 4 - Sort the stock ascending and vice versa
     it('should toggle sort between ascending and descending stock level', async () => {
         const results: Product[][] = [];
 
@@ -108,7 +109,7 @@ describe('ProductListComponent', () => {
         expect(component.currentSort).toBe('desc');
     });
 
-    // TEST UNIT 5 - Show empty state when filters cannot apply
+    // TEST CASE 5 - Show empty state when filters cannot apply
     it('should return empty list when no products match the active filters', async () => {
         const results: Product[][] = [];
 
@@ -120,17 +121,17 @@ describe('ProductListComponent', () => {
         expect(results[results.length - 1]).toHaveLength(0);
     });
 
-    // TEST UNIT 6 - Jump to product with query parameter (ID)
+    // TEST CASE 6 - Jump to product with route param (ID)
     it('should navigate to product detail with query param when a row is clicked', () => {
         component.goToProduct(MOCK_PRODUCTS[0]);
 
         expect(mockRouter.navigate).toHaveBeenCalledWith(
-            ['/products'],
-            { queryParams: { id: '1' } }
+            ['1'],
+            { relativeTo: expect.anything() }
         );
     });
 
-    // TEST UNIT 7 - List updated and displayed within real time
+    // TEST CASE 7 - List updated and displayed within real time
     it('should reflect real-time stock updates when the stream emits new data', async () => {
         mockProductService.getProducts.mockReturnValue(stockSubject.asObservable());
 

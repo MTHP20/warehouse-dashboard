@@ -16,7 +16,7 @@ describe('ProductService', () => {
         vi.useRealTimers();
     });
 
-    // TEST UNIT 1 - Return a list of products after a simulated delay
+    // TEST CASE 1 - Return a list of products after a simulated delay
     it('should return a list of products after simulated delay', async () => {
         let result: any[] = [];
 
@@ -38,7 +38,7 @@ describe('ProductService', () => {
         });
     });
 
-    // TEST UNIT 2 - Return cached product on second instance without re-fetching
+    // TEST CASE 2 - Return cached product on second instance without re-fetching
     it('should return cached product on second call without re-fetching', async () => {
 
         service.getProducts().subscribe();
@@ -59,7 +59,7 @@ describe('ProductService', () => {
         expect(earlyResult).toBeNull();
     });
 
-    // TEST UNIT 3.1 - Give error message when source can't reach
+    // TEST CASE 3.1 - Give error message when source can't reach
     it('should emit a user-friendly error message when the source fails', async () => {
         (service as any).productsCache$ = null;
 
@@ -79,7 +79,7 @@ describe('ProductService', () => {
         expect(errorMessage).toBe('Failed to load products. Try again.');
     });
 
-    // TEST UNIT 3.2 Retry up to 2 times before error
+    // TEST CASE 3.2 Retry up to 2 times before error
     it('should retry up to 2 times before emitting a user-friendly error', async () => {
         let attemptCount = 0;
 
@@ -102,7 +102,7 @@ describe('ProductService', () => {
         expect(errorMessage).toBe('Failed to load products. Try again.');
     });
 
-    // TEST UNIT 4 - Emit updated product list
+    // TEST CASE 4 - Emit updated product list
     it('should emit updated product list on each stock stream tick', async () => {
         const emissions: any[][] = [];
 
@@ -121,7 +121,7 @@ describe('ProductService', () => {
     });
 
 
-    // TEST UNIT 5. Return order histroy for a valid product ID
+    // TEST CASE 5. Return order histroy for a valid product ID
     it('should return order history for a valid product ID', async () => {
         let orders: any[] = [];
 
@@ -140,7 +140,7 @@ describe('ProductService', () => {
         });
     });
 
-    // TEST UNIT 6 - To prove cache map is hit and not a fresh fetch
+    // TEST CASE 6 - To prove cache map is hit and not a fresh fetch
     it('should return cached product on second call without re-fetching', async () => {
         service.getProducts().subscribe();
         await vi.advanceTimersByTimeAsync(600);
@@ -156,7 +156,7 @@ describe('ProductService', () => {
         expect(result?.name).toBe('Mechanical Keyboard');
     });
 
-    // TEST UNIT 7 - Edge case: empty product list
+    // TEST CASE 7 - Edge case: empty product list
     it('should handle an empty product list gracefully', async () => {
         (service as any).productsCache$ = of([]);
 
@@ -169,7 +169,7 @@ describe('ProductService', () => {
         expect(result).toHaveLength(0);
     });
 
-    // TEST UNIT 8 - Stock status transition
+    // TEST CASE 8 - Stock status transition
     it('should reflect correct status after stock level crosses a threshold', async () => {
         const emissions: any[][] = [];
         const sub = service.getStockStream().subscribe(p => emissions.push(p));
