@@ -1,1 +1,13 @@
-NOTIFICATIONS BAR HERE
+<div>
+  @if (alert()) {
+    <div >
+      <span >{{ isCritical() ? 'CRTICAL' : 'LOW' }}</span>
+      <span >{{ alert() }}</span>
+      <button  (click)="dismiss()">✕</button>
+    </div>
+  } @else {
+    <div>
+      <span>All products are in stock</span>
+    </div>
+  }
+</div>
