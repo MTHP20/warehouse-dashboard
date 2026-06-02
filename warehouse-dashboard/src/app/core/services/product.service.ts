@@ -151,7 +151,6 @@ export class ProductService {
       const newStatus = getStatus(newLevel);
 
       if (newStatus !== product.status && (newStatus === 'Low Stock' || newStatus === 'Out of Stock')) {
-        console.log(`${product.name} is now ${newStatus}`);
         this.notificationsService.notify(`${product.name} is now ${newStatus}`);
       }
 

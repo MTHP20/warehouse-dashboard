@@ -1,16 +1,14 @@
-import { AsyncPipe } from '@angular/common';
 import { Component, computed, effect, signal } from '@angular/core';
 import { Order, Product } from '../../../../core/models/product.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { catchError, EMPTY, forkJoin, map, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [
-    AsyncPipe
-  ],
+  imports: [MatIconModule],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
 })
@@ -74,7 +72,7 @@ export class ProductDetailComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/'], { relativeTo: this.route });
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 
   retry(): void {

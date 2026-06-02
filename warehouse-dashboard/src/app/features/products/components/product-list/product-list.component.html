@@ -5,6 +5,7 @@
       <option value="Peripherals">Peripherals</option>
       <option value="Electronics">Electronics</option>
       <option value="Storage">Storage</option>
+      <option value="Accessories">Accessories</option>
     </select>
     <select [formControl]="statusFilter">
       <option value="">All statuses</option>
@@ -15,41 +16,41 @@
   </div>
 
   @if (filteredProducts$ | async; as products) {
-    @if (products.length === 0) {
-      <div class="empty-state">
-        <p>No products match your filters.</p>
-      </div>
-    } @else {
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th (click)="toggleSort()">
-              Stock Level {{ currentSort === 'asc' ? '↑' : '↓' }}
-            </th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (product of products; track product.id) {
-            <tr (click)="goToProduct(product)">
-              <td>{{ product.name }}</td>
-              <td>{{ product.category }}</td>
-              <td>{{ product.stockLevel }}</td>
-              <td>
-                <span>
-                  {{ product.status }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
+  @if (products.length === 0) {
+  <div class="empty-state">
+    <p>No products match your filters.</p>
+  </div>
   } @else {
-    <div>
-      <p>Loading...</p>
-    </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th (click)="toggleSort()">
+          Stock Level {{ currentSort === 'asc' ? '↑' : '↓' }}
+        </th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (product of products; track product.id) {
+      <tr (click)="goToProduct(product)">
+        <td>{{ product.name }}</td>
+        <td>{{ product.category }}</td>
+        <td>{{ product.stockLevel }}</td>
+        <td>
+          <span>
+            {{ product.status }}
+          </span>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+  } @else {
+  <div>
+    <p>Loading...</p>
+  </div>
   }
 </div>

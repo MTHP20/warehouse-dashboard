@@ -122,7 +122,7 @@ describe('ProductListComponent', () => {
     });
 
     // TEST CASE 6 - Jump to product with route param (ID)
-    it('should navigate to product detail with query param when a row is clicked', () => {
+    it('should navigate to product detail with route param when a row is clicked', () => {
         component.goToProduct(MOCK_PRODUCTS[0]);
 
         expect(mockRouter.navigate).toHaveBeenCalledWith(
