@@ -121,7 +121,16 @@ export class ProductService {
       tap(item => this.productCache.set(item.id, item)),
     )
   }
-  
+
+  getOrderHistory(id: string): Observable<Order[]> {
+    const orders = MOCK_ORDERS[id] ?? [];
+    return of(orders).pipe(
+      delay(600),
+      retry(2),
+      catchError(() => throwError(() => new Error('Failed to load order history. Try again.')))
+    );
+  }
+
   getStockStream(): Observable<Product[]> {
     return this.stockStream$;
   }
