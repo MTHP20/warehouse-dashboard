@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ProductService } from '../../../../core/services/product.service';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { BehaviorSubject, combineLatest, map, Observable, startWith } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, combineLatest, map, merge, Observable, startWith } from 'rxjs';
 import { Product } from '../../../../core/models/product.model';
 import { AsyncPipe } from '@angular/common';
 
@@ -28,11 +28,15 @@ export class ProductListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private productService: ProductService
+    private productService: ProductService,
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
-    this.products$ = this.productService.getProducts();
+    this.products$ = merge(
+      this.productService.getProducts(),
+      this.productService.getStockStream()
+    );
 
     this.filteredProducts$ = combineLatest([
       this.products$,
@@ -53,10 +57,10 @@ export class ProductListComponent implements OnInit {
   }
 
   goToProduct(product: Product): void {
-    this.router.navigate(['/products'], { queryParams: { id: product.id } });
+    this.router.navigate([product.id], { relativeTo: this.route });
   }
 
-  applyFilterAndSort(products: Product[], category: string, status: string, sort: SortOrder): Product[] {
+  private applyFilterAndSort(products: Product[], category: string, status: string, sort: SortOrder): Product[] {
     return products
       .filter(p => category ? p.category === category : true)
       .filter(p => status ? p.status === status : true)
