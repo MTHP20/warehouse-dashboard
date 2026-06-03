@@ -1,9 +1,12 @@
 import { Component, computed, effect, Signal, ViewEncapsulation } from '@angular/core';
 import { NotificationsService } from '../../../../core/services/notifications.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-notification-bar',
-  imports: [],
+  imports: [
+    MatIconModule
+  ],
   templateUrl: './notification-bar.component.html',
   styleUrl: './notification-bar.component.scss',
   // Web Component

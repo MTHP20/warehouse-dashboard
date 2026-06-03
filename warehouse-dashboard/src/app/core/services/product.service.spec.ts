@@ -140,8 +140,8 @@ describe('ProductService', () => {
         });
     });
 
-    // TEST CASE 6 - To prove cache map is hit and not a fresh fetch
-    it('should return cached product on second call without re-fetching', async () => {
+    // TEST CASE 6 - Hit Cache map and perform fresh fetch
+    it('should hit the cache map and not perform a fresh fetch', async () => {
         service.getProducts().subscribe();
         await vi.advanceTimersByTimeAsync(600);
 

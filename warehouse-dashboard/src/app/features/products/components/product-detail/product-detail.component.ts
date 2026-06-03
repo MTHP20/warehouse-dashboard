@@ -1,20 +1,27 @@
-import { AsyncPipe } from '@angular/common';
 import { Component, computed, effect, signal } from '@angular/core';
 import { Order, Product } from '../../../../core/models/product.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { catchError, EMPTY, forkJoin, map, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatIconModule } from '@angular/material/icon';
+import { UpperCasePipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-product-detail',
   imports: [
-    AsyncPipe
+    UpperCasePipe,
+    MatTableModule,
+    MatProgressSpinnerModule,
+    MatIconModule
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {
+  orderColumns = ['id', 'date', 'quantity', 'status'];
   // Signal for local state
   product = signal<Product | null>(null);
   orders = signal<Order[]>([]);
@@ -74,7 +81,7 @@ export class ProductDetailComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/'], { relativeTo: this.route });
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 
   retry(): void {

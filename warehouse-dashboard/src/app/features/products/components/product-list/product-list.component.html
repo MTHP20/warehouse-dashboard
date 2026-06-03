@@ -1,55 +1,119 @@
-<div>
-  <div>
-    <select [formControl]="categoryFilter">
-      <option value="">All categories</option>
-      <option value="Peripherals">Peripherals</option>
-      <option value="Electronics">Electronics</option>
-      <option value="Storage">Storage</option>
-    </select>
-    <select [formControl]="statusFilter">
-      <option value="">All statuses</option>
-      <option value="In Stock">In Stock</option>
-      <option value="Low Stock">Low Stock</option>
-      <option value="Out of Stock">Out of Stock</option>
-    </select>
-  </div>
-
-  @if (filteredProducts$ | async; as products) {
-    @if (products.length === 0) {
-      <div class="empty-state">
-        <p>No products match your filters.</p>
+<div class="w-100 d-flex flex-column gap-4">
+  <!-- PRODUCT OVERVIEW - STAT CARDS -->
+  <div class="product-overview d-flex gap-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-label fw-bold mb-1">Total Products</div>
+          <div class="stat-value fw-bold mb-1">{{ (totalProducts$ | async) }}</div>
+          <div class="stat-sub">All products</div>
+        </div>
+        <div class="stat-icon stat-icon--blue">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
       </div>
-    } @else {
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th (click)="toggleSort()">
-              Stock Level {{ currentSort === 'asc' ? '↑' : '↓' }}
-            </th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (product of products; track product.id) {
-            <tr (click)="goToProduct(product)">
-              <td>{{ product.name }}</td>
-              <td>{{ product.category }}</td>
-              <td>{{ product.stockLevel }}</td>
-              <td>
-                <span>
-                  {{ product.status }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
-  } @else {
-    <div>
-      <p>Loading...</p>
     </div>
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-label fw-bold mb-1">In Stock</div>
+          <div class="stat-value fw-bold mb-1">{{ (inStock$ | async) }}</div>
+          <div class="stat-sub">{{ ((inStock$ | async) ?? 0) * 100 / ((totalProducts$ | async) ?? 1) | number:'1.0-0'
+            }}% of total</div>
+        </div>
+        <div class="stat-icon stat-icon--green">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-label fw-bold mb-1">Low Stock</div>
+          <div class="stat-value fw-bold mb-1">{{ (lowStock$ | async) }}</div>
+          <div class="stat-sub">{{ ((lowStock$ | async) ?? 0) * 100 / ((totalProducts$ | async) ?? 1) | number:'1.0-0'
+            }}% of total</div>
+        </div>
+        <div class="stat-icon stat-icon--amber">
+          <mat-icon>warning</mat-icon>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-label fw-bold mb-1">Out of Stock</div>
+          <div class="stat-value fw-bold mb-1">{{ (outOfStock$ | async) }}</div>
+          <div class="stat-sub">{{ ((outOfStock$ | async) ?? 0) * 100 / ((totalProducts$ | async) ?? 1) | number:'1.0-0'
+            }}% of total</div>
+        </div>
+        <div class="stat-icon stat-icon--red">
+          <mat-icon>close</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- PRODUCT LIST TABLE -->
+  <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+    <input class="form-control search-input" [formControl]="searchFilter" placeholder="Search products..." />
+    <div class="d-flex gap-2">
+      <select class="form-select" [formControl]="categoryFilter">
+        <option value="">All categories</option>
+        <option value="Peripherals">Peripherals</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Storage">Storage</option>
+        <option value="Accessories">Accessories</option>
+      </select>
+      <select class="form-select" [formControl]="statusFilter">
+        <option value="">All statuses</option>
+        <option value="In Stock">In Stock</option>
+        <option value="Low Stock">Low Stock</option>
+        <option value="Out of Stock">Out of Stock</option>
+      </select>
+    </div>
+  </div>
+  @if (filteredProducts$ | async; as products) {
+  @if (products.length === 0) {
+  <div class="empty-state">
+    <p class="text-muted mb-0">No products match your filters.</p>
+  </div>
+  } @else {
+  <table mat-table [dataSource]="products" class="product-table w-100">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let product">{{ product.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="category">
+      <th mat-header-cell *matHeaderCellDef>Category</th>
+      <td mat-cell *matCellDef="let product">{{ product.category }}</td>
+    </ng-container>
+    <ng-container matColumnDef="stockLevel">
+      <th mat-header-cell *matHeaderCellDef class="sortable-col" (click)="toggleSort()">
+        Stock Level
+        <mat-icon class="sort-icon">
+          {{ currentSort === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+        </mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let product">{{ product.stockLevel }}</td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let product">
+        <span [class.badge-in-stock]="product.status === 'In Stock'"
+          [class.badge-low-stock]="product.status === 'Low Stock'"
+          [class.badge-out-of-stock]="product.status === 'Out of Stock'">
+          {{ product.status }}
+        </span>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let product; columns: displayedColumns" (click)="goToProduct(product)" class="product-row">
+    </tr>
+  </table>
+  }
+  } @else {
+  <div class="w-100 d-flex justify-content-center align-items-center p-5">
+    <mat-spinner></mat-spinner>
+  </div>
   }
 </div>

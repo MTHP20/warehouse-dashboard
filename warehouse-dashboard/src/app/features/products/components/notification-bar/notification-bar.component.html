@@ -1,13 +1,26 @@
-<div>
-  @if (alert()) {
-    <div >
-      <span >{{ isCritical() ? 'CRTICAL' : 'LOW' }}</span>
-      <span >{{ alert() }}</span>
-      <button  (click)="dismiss()">✕</button>
+<div class="notification-bar">
+  <div class="brand">
+    <div class="brand-logo">W</div>
+    <div class="brand-text">
+      <div class="brand-title">Warehouse</div>
+      <div class="brand-subtitle">Dashboard</div>
     </div>
-  } @else {
-    <div>
-      <span>All products are in stock</span>
-    </div>
-  }
+  </div>
+
+  <div class="status">
+    @if (alert()) {
+      <div class="status-alert" [class.status-critical]="isCritical()">
+        <span class="status-dot alert-dot"></span>
+        <span class="status-message">{{ alert() }}</span>
+        <button class="status-dismiss" (click)="dismiss()">✕</button>
+      </div>
+    } @else {
+      <div class="status-ok">
+        <span class="status-dot ok-dot"></span>
+        <span>All products in stock</span>
+      </div>
+    }
+  </div>
+
+  <div class="user-greeting">Hello, User</div>
 </div>
